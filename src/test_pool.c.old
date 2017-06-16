@@ -1,0 +1,77 @@
+/*************************************************************************
+	> File Name:    test.c
+	> Author:       vivid
+	> Mail:         353470469@qq.com
+	> Created Time: 2017年04月26日 星期三 23时13分08秒
+ ************************************************************************/
+
+#include <stdio.h>
+#include <sys/time.h>  
+#include <pool.h>
+#include <string.h>
+
+extern int pagesize;
+
+int main(int argc, char *argv[])
+{
+    pool_t *pool  = NULL;
+    void   *res   = NULL;
+    int     loop  = 0;
+    int     count = 0;
+    int     size  = 0;
+
+    struct timeval start;
+    struct timeval end;
+
+    if (argc != 3)
+    {
+        printf("Usage: cmd size cnt.\n");
+        
+        return -1;
+    }
+
+    count = atoi(argv[1]);
+    size  = atoi(argv[2]);
+
+    pool = createPool(1024);
+   /*
+    * 内存池性能测试
+    * */    
+    
+    memset(&start, 0x0, sizeof(struct timeval));
+    memset(&end, 0x0, sizeof(struct timeval));
+
+    gettimeofday(&start, NULL);
+    for (loop = 0; loop < count; ++loop)
+    {
+        res = getMem(pool, size);
+    }
+
+    gettimeofday(&end, NULL);
+
+    printf("[mempool]:size=%d,count=%d\n", size, count);
+    printf("\t%d.%d\n", end.tv_sec-start.tv_sec,
+          end.tv_usec-start.tv_usec);
+
+    destroyPool(pool);
+
+    /*
+    * malloc 测试
+    * */
+
+    memset(&start, 0x0, sizeof(struct timeval));
+    memset(&end, 0x0, sizeof(struct timeval));
+
+    gettimeofday(&start, NULL);
+    for (loop = 0; loop < count; ++loop)
+    {
+        res = malloc(size);
+    }
+    gettimeofday(&end, NULL);
+    
+    printf("[malloc]:size=%d,count=%d\n", size, count);
+    printf("\t%d.%d\n", end.tv_sec-start.tv_sec,
+          end.tv_usec-start.tv_usec);
+
+    return 0;
+}
